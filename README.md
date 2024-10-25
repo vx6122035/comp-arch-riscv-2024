@@ -1,2 +1,1 @@
-# comp-arch-riscv-2024
-
+# lab-starter
