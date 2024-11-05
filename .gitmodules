@@ -1,0 +1,3 @@
+[submodule "hw2/classify-rv32i"]
+    path = hw2/classify-rv32i
+    url = https://github.com/sysprog21/classify-rv32i.git
