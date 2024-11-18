@@ -1,51 +1,56 @@
 .globl relu
 
+.text
 # ==============================================================================
-# FUNCTION: Performs an inplace element-wise ReLU on an array of ints
+# FUNCTION: Array ReLU Activation
+#
+# Applies ReLU (Rectified Linear Unit) operation in-place:
+# For each element x in array: x = max(0, x)
+#
 # Arguments:
-#   a0 (int*) is the pointer to the array
-#   a1 (int)  is the length of the array
+#   a0: Pointer to integer array to be modified
+#   a1: Number of elements in array
+#
 # Returns:
-#   None
+#   None - Original array is modified directly
+#
+# Validation:
+#   Requires non-empty array (length ≥ 1)
+#   Terminates (code 36) if validation fails
+#
+# Example:
+#   Input:  [-2, 0, 3, -1, 5]
+#   Result: [ 0, 0, 3,  0, 5]
 # ==============================================================================
 relu:
     # Prologue
-    addi sp, sp, -12
-    sw ra, 0(sp)
-    sw s0, 4(sp)
-    sw s1, 8(sp)
-
-    # Save arguments
-    mv s0, a0       # array pointer
-    mv s1, a1       # length
-
-    # Initialize counter
-    li t0, 0        # i = 0
+    li t0, 1              # t0 = 1 for validation check
+    blt a1, t0, error     # if length < 1, go to error
+    li t1, 0              # t1 = loop counter
 
 loop_start:
-    beq t0, s1, loop_end    # if i == length, exit loop
+    beq t1, a1, done      # if counter == length, exit loop
     
-    # Calculate address of current element
-    slli t1, t0, 2          # t1 = i * 4 (size of int)
-    add t1, s0, t1          # t1 = array + (i * 4)
+    # Calculate current address
+    slli t2, t1, 2        # t2 = counter * 4 (shift left by 2)
+    add t2, a0, t2        # t2 = base + offset
     
     # Load current element
-    lw t2, 0(t1)           # t2 = array[i]
+    lw t3, 0(t2)          # t3 = current element
     
-    # Compare with zero
-    bge t2, zero, continue  # if array[i] >= 0, skip
+    # Check if element is negative
+    bge t3, zero, continue # if element >= 0, skip to continue
     
-    # If negative, set to zero
-    sw zero, 0(t1)         # array[i] = 0
+    # If negative, set to 0
+    sw zero, 0(t2)        # store 0 at current address
 
 continue:
-    addi t0, t0, 1         # i++
-    j loop_start
+    addi t1, t1, 1        # increment counter
+    j loop_start          # continue loop
 
-loop_end:
-    # Epilogue
-    lw ra, 0(sp)
-    lw s0, 4(sp)
-    lw s1, 8(sp)
-    addi sp, sp, 12
-    ret
+done:
+    ret                   # return to caller
+
+error:
+    li a0, 36            # exit code 36
+    j exit               # terminate program

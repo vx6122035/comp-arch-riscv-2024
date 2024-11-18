@@ -541,19 +541,10 @@ outer_loop_end:
 ## Part B: File Operations and Main
 ### Task 1: Read Matrix
 
-The original basic code gives the following functionalities.
-1. Opens the file (By using `fopen`)
-2. Reads the header to get rows and columns and saves them to register t1 and t2 based on the addresses provided in register a1 and a2.
-3. Calculates the total elements to allocate memory
-4. Allocates memory for the matrix
-5. Reads the matrix data into the allocated memory
-6. Closes the file and returns the matrix pointer
-
-My Added Multiplication Code:
-
-Purpose: Calculate total number of elements ($rows \times columns$) without using `mul` instruction
-
 #### read_matrix.s
+
+The purpose of the modification is to calculate the total number of elements ($\text{rows} \times \text{columns}$) without using the `mul` instruction.
+
 ```c
     # Multiplication implementation
     li s1, 0         # Initialize result
@@ -567,33 +558,17 @@ multiplication_done:
     # Now s1 contains t1 * t2 (number of elements)
 ```
 
+The result stored in register s1 is then used to:
+1. Calculate total bytes needed: `slli t3, s1, 2` (multiply by 4 for bytes)
+2. Allocate the correct amount of memory with malloc
+3. Read the right number of bytes from the file
+
 ### Task 2: Write Matrix
 
-The original basic code gives the following functionalities.
-1. Opens the file (By using `fopen`) for writing
-2. Writes the matrix rows and columns as header information
-3. Calculates the total elements to allocate memory
-4. Writes matrix data to the file
-5. Closes the file and returns the matrix pointer
-
-My Added Multiplication Code:
-
-Purpose: Calculate total number of elements ($rows \times columns$) without using `mul` instruction
-
-Try to use the binary representation of numbers to perform the multiplication.
-1. If the row number is odd (the last bit is 1), add the current column value to our result
-2. Shift row right (divide by 2) and column left (multiply by 2)
-3. continue until row becomes 0
-Here is the example
-Row (7) | Column (4) | Is Row Odd? | Add Column to Result?
--------------------------------------------------------
-0111    | 0100      | Yes         | Result += 4  (4)
-0011    | 1000      | Yes         | Result += 8  (12)
-0001    | 10000     | Yes         | Result += 16 (28)
-0000    | 100000    | No          | Done! Result = 28
-
-
 #### write_matrix.s
+
+
+
 ```c
     # Calculate total number of elements (rows × columns)
     mv t0, s2        # t0 = rows
@@ -614,68 +589,7 @@ multiply_done:
 
 ### Task 3: Classification
 
-The original code sets up the structure for performing matrix operations required in a neural network classifier.
-
-1. Reads three matrices from files (M0, M1, and input) 
-2. Performs matrix multiplication: $h=M0 \times input$ 
-3. Applies ReLU activation function to h 
-4. Performs second matrix multiplication: $o=M1 \times h$ 
-5. Writes the result to the output file 
-6. Returns the argmax of the output (index of maximum value)
-
-Main steps in this classification process:
-Input -> Matrix M0 -> ReLU -> Matrix M1 -> Output
-
-1. `mul_loop1` is introduced to perform multiplication by adding t1 to a0, t0 times. 
-   Calculate the total size needed for `h`.
-2. `mul_loop2` calculates the array `h` length.
-   This is the argument for the `relu` function.
-3. `mul_loop3` performs multiplication by repeated addition to compute the size needed for the output matrix `o`.
-4. `mul_loop4` calculates the length of the array `o` needed for the `argmax` function.
-
 #### classify.s
 ```c
-# Section 1
-    # Implement multiplication without mul instruction
-    mv a0, x0     # Initialize result to 0
-    mv t2, x0     # Initialize counter
-mul_loop1:
-    beq t2, t0, mul_loop1_end
-    add a0, a0, t1
-    addi t2, t2, 1
-    j mul_loop1
-mul_loop1_end:
 
-# Section 2
-    # Implement multiplication without mul instruction
-    mv a1, x0     # Initialize result to 0
-    mv t2, x0     # Initialize counter
-mul_loop2:
-    beq t2, t0, mul_loop2_end
-    add a1, a1, t1
-    addi t2, t2, 1
-    j mul_loop2
-mul_loop2_end:
-
-# Section 3
-    # Implement multiplication without mul instruction
-    mv a0, x0     # Initialize result to 0
-    mv t2, x0     # Initialize counter
-mul_loop3:
-    beq t2, t0, mul_loop3_end
-    add a0, a0, t1
-    addi t2, t2, 1
-    j mul_loop3
-mul_loop3_end:
-
-# Section 4
-    # Implement multiplication without mul instruction
-    mv a1, x0     # Initialize result to 0
-    mv t2, x0     # Initialize counter
-mul_loop4:
-    beq t2, t0, mul_loop4_end
-    add a1, a1, t1
-    addi t2, t2, 1
-    j mul_loop4
-mul_loop4_end:
 ```

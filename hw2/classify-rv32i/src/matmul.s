@@ -106,8 +106,9 @@ inner_loop_start:
     
 inner_loop_end:
     # Move to next row of matrix A
-    li t1, 4
-    mul t1, t1, a2  # multiply by number of columns in A
+    mv t1, a2
+    # multiply by number of columns in A
+    slli t1, t1, 2  # t1 = a2 * 4 (shift left by 2 positions)
     add s3, s3, t1  # move pointer to next row
     
     addi s0, s0, 1  # increment outer loop counter
